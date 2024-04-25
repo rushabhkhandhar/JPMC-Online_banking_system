@@ -21,4 +21,5 @@ public class Transaction {
     private double amount;
     private LocalDateTime transactionTime;
     private String transactionType;
+    
 }

@@ -1,5 +1,6 @@
 package com.example.demo.dto;
 
-public record TransactionDto(Long id, String transactionType, Double amount, String transactionDate, String transactionTime, Long accountId) {
+import java.time.LocalDateTime;
+public record TransactionDto(Long id, Long accountId,String transactionType, Double amount, LocalDateTime timestamp ) {
     
 }

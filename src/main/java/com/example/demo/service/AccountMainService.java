@@ -11,23 +11,20 @@ import com.example.demo.exception.AccountCreateException;
 import com.example.demo.exception.AccountException;
 import com.example.demo.exception.AmountException;
 import com.example.demo.mapper.AccountMapper;
-import com.example.demo.service.AccountService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
-
 @Service
 public class AccountMainService implements AccountService {
-    private  AccountRepository accountRepository;
-    private  TransactionRepository transactionRepository;
-    
+    private AccountRepository accountRepository;
+    private TransactionRepository transactionRepository;
+
     private static final String TRANSACTION_TYPE_DEPOSIT = "DEPOSIT";
     private static final String TRANSACTION_TYPE_WITHDRAW = "WITHDRAW";
     private static final String TRANSACTION_TYPE_REMITTANCE = "REMITTANCE";
-    
 
     public AccountMainService(AccountRepository accountRepository, TransactionRepository transactionRepository) {
         this.accountRepository = accountRepository;
@@ -36,27 +33,28 @@ public class AccountMainService implements AccountService {
 
     @Override
     public AccountDto createAccountDto(AccountDto accountDto) {
-         if(accountDto.accountName().isEmpty())
+        if (accountDto.accountName().isEmpty())
             throw new AccountCreateException("Account Name is required");
-            Account account = AccountMapper.toAccount(accountDto);
-           Account savedAccount= accountRepository.save(account);
-            return AccountMapper.toDto(savedAccount);
+        Account account = AccountMapper.toAccount(accountDto);
+        Account savedAccount = accountRepository.save(account);
+        return AccountMapper.toDto(savedAccount);
 
-        }
-   
-    @Override
-    public AccountDto getAccountDto(Long accountId) {
-         Account account = accountRepository.findById(accountId).orElseThrow(() -> new AccountException("Account not found"));
-         return AccountMapper.toDto(account);
     }
 
+    @Override
+    public AccountDto getAccountDto(Long accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountException("Account not found"));
+        return AccountMapper.toDto(account);
+    }
 
     @Override
     public AccountDto deposit(Long accountId, Double amount) {
-        Account account = accountRepository.findById(accountId).orElseThrow(()-> new AccountException("Account not found"));
-        if(amount <= 0)
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountException("Account not found"));
+        if (amount <= 0)
             throw new AmountException("Amount must be greater than 0");
-        double totaBal= account.getBalance() + amount;
+        double totaBal = account.getBalance() + amount;
         account.setBalance(totaBal);
         Account savedAccount = accountRepository.save(account);
 
@@ -67,35 +65,71 @@ public class AccountMainService implements AccountService {
         transactionRepository.save(transaction);
         return AccountMapper.toDto(savedAccount);
     }
-    
 
     @Override
     public AccountDto withdraw(Long accountId, Double amount) {
-        return null;
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountException("Account not found"));
+        if (amount <= 0)
+            throw new AmountException("Amount must be greater than 0");
+
+        double totaBal = account.getBalance() - amount;
+        account.setBalance(totaBal);
+        Account savedAccount = accountRepository.save(account);
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(TRANSACTION_TYPE_WITHDRAW);
+        transaction.setAccountId(accountId);
+        transaction.setAmount(amount);
+        transaction.setTransactionTime(LocalDateTime.now());
+        transactionRepository.save(transaction);
+        return AccountMapper.toDto(savedAccount);
+
     }
 
     @Override
     public List<AccountDto> getAllAccounts() {
-        return null;
+        List<Account> accounts = accountRepository.findAll();
+        return accounts.stream().map(AccountMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
     public void deleteAccount(Long accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountException("Account not found"));
+        accountRepository.delete(account);
     }
 
     @Override
     public void remittance(TransactionFoundDto transactionFoundDto) {
+       Account fromAccount = accountRepository.findById(transactionFoundDto.fromAccountId())
+               .orElseThrow(() -> new AccountException("Account not found"));
+        Account toAccount = accountRepository.findById(transactionFoundDto.toAccountId())
+                .orElseThrow(() -> new AccountException("Account not found"));
+        if(fromAccount.getBalance() < transactionFoundDto.amount())
+            throw new AmountException("Insufficient balance");
+        
+        fromAccount.setBalance(fromAccount.getBalance() - transactionFoundDto.amount());
+        toAccount.setBalance(toAccount.getBalance() + transactionFoundDto.amount());
+        accountRepository.save(fromAccount);
+        accountRepository.save(toAccount);
+
+        Transaction transaction = new Transaction();
+        transaction.setAccountId(transactionFoundDto.fromAccountId());
+        transaction.setAmount(transactionFoundDto.amount());
+        transaction.setTransactionType(TRANSACTION_TYPE_REMITTANCE);
+        transaction.setTransactionTime(LocalDateTime.now());
+        transactionRepository.save(transaction);
+
     }
 
     @Override
     public List<TransactionDto> getTransactions(Long accountId) {
-        return null;
+        List<Transaction> transactions = transactionRepository.findByAccountId(accountId);
+        return transactions.stream().map(this::convertEntityToDto).collect(Collectors.toList());
     }
 
-   private TransactionDto convertEntityToDto(Transaction transaction)
-   {
-    return null;
-   }
-   
-}
+    private TransactionDto convertEntityToDto(Transaction transaction) {
+        return new TransactionDto(transaction.getId(), transaction.getAccountId(), transaction.getTransactionType(), transaction.getAmount(), transaction.getTransactionTime());
 
+}
+}
