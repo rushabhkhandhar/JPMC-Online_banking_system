@@ -36,18 +36,38 @@ public class AccountMainService implements AccountService {
 
     @Override
     public AccountDto createAccountDto(AccountDto accountDto) {
-        return null;
+         if(accountDto.accountName().isEmpty())
+            throw new AccountCreateException("Account Name is required");
+            Account account = AccountMapper.toAccount(accountDto);
+           Account savedAccount= accountRepository.save(account);
+            return AccountMapper.toDto(savedAccount);
+
         }
    
     @Override
     public AccountDto getAccountDto(Long accountId) {
-        return null;
+         Account account = accountRepository.findById(accountId).orElseThrow(() -> new AccountException("Account not found"));
+         return AccountMapper.toDto(account);
     }
+
 
     @Override
     public AccountDto deposit(Long accountId, Double amount) {
-        return null;
+        Account account = accountRepository.findById(accountId).orElseThrow(()-> new AccountException("Account not found"));
+        if(amount <= 0)
+            throw new AmountException("Amount must be greater than 0");
+        double totaBal= account.getBalance() + amount;
+        account.setBalance(totaBal);
+        Account savedAccount = accountRepository.save(account);
+
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(TRANSACTION_TYPE_DEPOSIT);
+        transaction.setAmount(amount);
+        transaction.setTransactionTime(LocalDateTime.now());
+        transactionRepository.save(transaction);
+        return AccountMapper.toDto(savedAccount);
     }
+    
 
     @Override
     public AccountDto withdraw(Long accountId, Double amount) {
