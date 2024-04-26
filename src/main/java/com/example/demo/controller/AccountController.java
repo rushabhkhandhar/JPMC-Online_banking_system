@@ -39,6 +39,40 @@ public class AccountController {
         return new ResponseEntity<>(account, HttpStatus.OK);
     }
 
-    
+    @PutMapping("/{accountId}/deposit")
+    public ResponseEntity<AccountDto> deposit(@PathVariable Long accountId, @RequestParam Double amount) {
+        AccountDto account = accountService.deposit(accountId, amount);
+        return new ResponseEntity<>(account, HttpStatus.OK);
+    }
+
+    @PutMapping("/{accountId}/withdraw")
+    public ResponseEntity<AccountDto> withdraw(@PathVariable Long accountId, @RequestParam Double amount) {
+        AccountDto account = accountService.withdraw(accountId, amount);
+        return new ResponseEntity<>(account, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<AccountDto>> getAllAccounts() {
+        List<AccountDto> accounts = accountService.getAllAccounts();
+        return new ResponseEntity<>(accounts, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{accountId}")
+    public ResponseEntity<Void> deleteAccount(@PathVariable Long accountId) {
+        accountService.deleteAccount(accountId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/remittance")
+    public ResponseEntity<Void> remittance(@RequestBody TransactionFoundDto transactionFoundDto) {
+        accountService.remittance(transactionFoundDto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{accountId}/transactions")
+    public ResponseEntity<List<TransactionDto>> getTransactions(@PathVariable Long accountId) {
+        List<TransactionDto> transactions = accountService.getTransactions(accountId);
+        return new ResponseEntity<>(transactions, HttpStatus.OK);
+    }
 
 }
