@@ -2,7 +2,7 @@
 #  Banking system with remittance,acceptance of deposit 
 
 Introduction
-
+https://github.com/rushabhkhandhar/JPMC-Online_banking_system
 This project provides a simple RESTful API for managing bank accounts. It allows you to create accounts, retrieve account information, and perform deposit,withdraw and remmitance operation
 
 
@@ -43,7 +43,7 @@ This project provides a simple RESTful API for managing bank accounts. It allows
 ## Installation
 
 ```bash
- git https://github.com/rushabhkhandhar/JPMC-Online_banking_system
+ git clone https://github.com/rushabhkhandhar/JPMC-Online_banking_system
  mvn clean install
  mvn spring-boot:run
  http://localhost:8080
