@@ -2,7 +2,7 @@
 #  Banking system with remittance,acceptance of deposit 
 
 Introduction
-https://github.com/rushabhkhandhar/JPMC-Online_banking_system
+
 This project provides a simple RESTful API for managing bank accounts. It allows you to create accounts, retrieve account information, and perform deposit,withdraw and remmitance operation
 
 
