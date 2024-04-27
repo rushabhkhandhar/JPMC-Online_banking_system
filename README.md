@@ -25,7 +25,7 @@ This project provides a simple RESTful API for managing bank accounts. It allows
 
 ## Tech Stack
 
-**Server:** Java,Spring Boot,Spring Data JPA,H2 Database,MySQL(still in progress)
+**Server:** Java,Spring Boot,Spring Data JPA,H2 Database,MySQL
 
 **Tool:** Postman
 
